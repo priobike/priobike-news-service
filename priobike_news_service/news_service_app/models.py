@@ -16,4 +16,4 @@ class NewsArticle(models.Model):
         return self.article_title + ": " + self.article_text
 
     class Meta:
-        ordering = ['pub_date']
+        ordering = ['-pub_date']

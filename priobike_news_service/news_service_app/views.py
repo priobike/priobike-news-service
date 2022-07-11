@@ -10,6 +10,7 @@ import hashlib
 from datetime import datetime, timedelta
 import json
 
+from news_service_app.utils.serializer import serialize_article_to_dict
 from news_service_app.models import Category, NewsArticle 
 
 def cross_origin(response):
@@ -26,16 +27,15 @@ class NewsResource(View):
         
         if client_md5_hash is not None and last_sync_date is not None:  
             date = datetime.strptime(last_sync_date, "%Y-%m-%d").date()
-            
-            old_articles = list(NewsArticle.objects.filter(pub_date__lte=date).values())
-            old_artilces_json = json.dump(old_articles)
+            old_articles = list(NewsArticle.objects.filter(pub_date__lte=date))
+            old_articles_serialized = [serialize_article_to_dict(article) for article in old_articles]
+            old_artilces_json = json.dumps(old_articles_serialized)
             old_articles_md5_hash = hashlib.md5(old_artilces_json.encode('utf-8')).hexdigest()
             
             if client_md5_hash != old_articles_md5_hash:
                 all_articles = list(NewsArticle.objects.filter(pub_date__lte=timezone.now().date()).values())
                 return cross_origin(JsonResponse(all_articles, safe=False))
             else:
-                date = date - timedelta(days=1)
                 new_articles = list(NewsArticle.objects.filter(pub_date__gt=date, pub_date__lte=timezone.now().date()).values())
                 return cross_origin(JsonResponse(new_articles, safe=False))
         else:
