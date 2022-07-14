@@ -6,8 +6,8 @@ import hashlib
 from datetime import timedelta
 import json
 
-from news_service_app.utils.serializer import serialize_article_to_dict
-from news_service_app.models import Category, NewsArticle 
+from news.utils.serializer import serialize_article_to_dict
+from news.models import Category, NewsArticle 
 
 class ArticleTests(TestCase):
     def test_only_return_news_articles_that_are_not_in_future(self):
@@ -19,7 +19,7 @@ class ArticleTests(TestCase):
         NewsArticle.objects.create(article_text=article_text, category=category, pub_date=date, article_title=article_title)
         
         # Check that "Article 1" doesn't get returned because its date is in the future
-        response = self.client.get(reverse('news_service_app:news-articles'))
+        response = self.client.get(reverse('news:news-articles'))
         self.assertQuerysetEqual(response.json(), [])
         
         # Article 2
@@ -30,7 +30,7 @@ class ArticleTests(TestCase):
         article = NewsArticle.objects.create(article_text=article_text, category=category, pub_date=date, article_title=article_title)
         
         # Check that "Article 2" gets returned because its date is in the past
-        response = self.client.get(reverse('news_service_app:news-articles'))
+        response = self.client.get(reverse('news:news-articles'))
         article_dict = serialize_article_to_dict(article)
         self.assertEqual(response.json(), [article_dict])
         
@@ -42,7 +42,7 @@ class ArticleTests(TestCase):
         article = NewsArticle.objects.create(article_text=article_text, category=category, pub_date=date, article_title=article_title)
         
         # Check that both "Article 2" and "Article 3" get returned 
-        response = self.client.get(reverse('news_service_app:news-articles'))
+        response = self.client.get(reverse('news:news-articles'))
         self.assertEqual(len(response.json()), 2)
         
     def test_only_return_news_articles_up_to_specific_date(self):
@@ -84,7 +84,7 @@ class ArticleTests(TestCase):
         hash = hashlib.md5(articles_json.encode('utf-8')).hexdigest()
         
         # Get articles:
-        base_url = reverse('news_service_app:news-articles')
+        base_url = reverse('news:news-articles')
         response = self.client.get('{base_url}?{querystring}'.format(base_url=base_url, querystring=urlencode({'last_sync_date': test_date.strftime("%Y-%m-%d"), 'hash': hash})))
         self.assertEqual(len(response.json()), 2)
         
@@ -124,7 +124,7 @@ class ArticleTests(TestCase):
         hash = "bc3afe19e2b0c792554c86f55c3e4d99"
         
         # Get all articles because of wrong hash:
-        base_url = reverse('news_service_app:news-articles')
+        base_url = reverse('news:news-articles')
         response = self.client.get('{base_url}?{querystring}'.format(base_url=base_url, querystring=urlencode({'last_sync_date': test_date.strftime("%Y-%m-%d"), 'hash': hash})))
         self.assertEqual(len(response.json()), 4)
         

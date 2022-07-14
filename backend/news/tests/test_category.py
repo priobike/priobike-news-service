@@ -7,11 +7,11 @@ import hashlib
 from datetime import timedelta
 import json
 
-from news_service_app.utils.serializer import serialize_article_to_dict
-from news_service_app.models import Category, NewsArticle 
+from news.utils.serializer import serialize_article_to_dict
+from news.models import Category, NewsArticle 
 
 
-from news_service_app.models import Category, NewsArticle 
+from news.models import Category, NewsArticle 
 class CategoryTests(TestCase):
     def test_create_news_article_and_get_category_name(self):
         # Article:
@@ -22,11 +22,11 @@ class CategoryTests(TestCase):
         NewsArticle.objects.create(article_text=article_text, category=category, pub_date=date, article_title=article_title)
         
         # Get article
-        response_news_articles = self.client.get(reverse('news_service_app:news-articles'))
+        response_news_articles = self.client.get(reverse('news:news-articles'))
         response_dict = response_news_articles.json()
         
         # Get corresponding news object
         category_id = response_dict[0]['category_id']
-        response_category = self.client.get(reverse('news_service_app:category', args=[category_id]))
+        response_category = self.client.get(reverse('news:category', args=[category_id]))
         
         self.assertEqual(response_category.json()['title'], "Test131265")
