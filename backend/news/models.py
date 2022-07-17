@@ -26,7 +26,7 @@ class NewsArticle(models.Model):
 
     category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.SET_NULL)
 
-    md5 = models.CharField(max_length=32, editable=False)
+    md5 = models.CharField(max_length=32)
 
     def save(self, *args, **kwargs):
         if not self.md5:
