@@ -21,9 +21,8 @@ class NewsResource(View):
                 published_articles = published_articles.filter(pub_date__gt=last_sync_date)
             except ValidationError:
                 return HttpResponseBadRequest(json.dumps({"error": "Invalid date format."}))
-
-        data = serializers.serialize("json", published_articles)
-        return HttpResponse(data)
+        
+        return JsonResponse(list(published_articles.values()), safe=False)
 
       
 class CategoryResource(View):
