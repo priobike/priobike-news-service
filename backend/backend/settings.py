@@ -21,11 +21,14 @@ ALLOWED_HOSTS = ['*']
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_KEY')
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+
+# SECURITY WARNING: keep the secret key used in production secret!
+if DEBUG:
+    SECRET_KEY = "django-insecure-h4wvbex$t4k_adc#55mqy3d5x($(8qo5=-c_3x81vbrw*0u5pc"
+else:
+    SECRET_KEY = os.environ.get('DJANGO_KEY')
 
 # Application definition
 
