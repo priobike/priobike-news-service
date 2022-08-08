@@ -10,6 +10,18 @@ pipeline {
     }
 
     stages {
+        stage('Run Unit Tests in Test Setup') {
+            steps {
+                sh 'docker-compose -f docker-compose.test.yml up --build -d'
+                sh 'docker exec backend /bin/bash -c " \
+                        sh ./wait-for-postgres.sh && \
+                        cd backend && \
+                        poetry run python manage.py test \
+                    "'
+                sh 'docker-compose -f docker-compose.test.yml down -v -t 0'
+            }
+        }
+        
         stage('Build and Publish Containers') {
             steps {
                 script {

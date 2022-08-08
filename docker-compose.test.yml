@@ -1,0 +1,28 @@
+# Containers that are needed to execute tests
+services:
+  db:
+    image: postgres
+    container_name: postgres
+    hostname: db
+    env_file:
+      - dev.env
+    volumes:
+      - pg_conf:/etc/postgresql
+      - pg_log:/var/log/postgresql
+      - pg_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend:
+    container_name: backend
+    build: .
+    env_file:
+      - dev.env
+    depends_on:
+      - db
+    tty: true
+    restart: unless-stopped
+
+volumes:
+  pg_data:
+  pg_conf:
+  pg_log:
