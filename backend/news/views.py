@@ -1,9 +1,8 @@
 import json
 
-from django.core import serializers
 from django.core.exceptions import ValidationError
 from django.forms.models import model_to_dict
-from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.generic import View
@@ -21,9 +20,8 @@ class NewsResource(View):
                 published_articles = published_articles.filter(pub_date__gt=last_sync_date)
             except ValidationError:
                 return HttpResponseBadRequest(json.dumps({"error": "Invalid date format."}))
-
-        data = serializers.serialize("json", published_articles)
-        return HttpResponse(data)
+        
+        return JsonResponse(list(published_articles.values()), safe=False)
 
       
 class CategoryResource(View):
