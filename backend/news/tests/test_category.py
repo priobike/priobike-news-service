@@ -1,16 +1,12 @@
-from django.test import TestCase
-from django.test import TestCase
-from django.utils import timezone
-from django.urls import reverse
-from django.utils.http import urlencode
-import hashlib
 from datetime import timedelta
-import json
 
-from news.models import Category, NewsArticle 
+from django.test import TestCase
+from django.urls import reverse
+from django.utils import timezone
+from news.models import Category, NewsArticle
 from news.tests.test_article import create_category_and_article
 
-from news.models import Category, NewsArticle 
+
 class CategoryTests(TestCase):
     def test_create_news_article_and_get_category_name(self):
         """ Test whether after creation of a category and news object the previously created category gets returned. """
