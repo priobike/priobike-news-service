@@ -24,6 +24,12 @@ ALLOWED_HOSTS = ['*']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
+# Load env variable that specifies first part of the url for the admin page
+# e.g. "production/" or "staging/"
+ADMIN_SITE_RELATIVE_URL_PATH = os.environ.get('ADMIN_SITE_RELATIVE_URL_PATH', 'staging/')
+# Set constant for the url of the admin site
+ADMIN_SITE_URL = f"{ADMIN_SITE_RELATIVE_URL_PATH}news-service/admin/"
+
 # SECURITY WARNING: keep the secret key used in production secret!
 if DEBUG:
     SECRET_KEY = "django-insecure-h4wvbex$t4k_adc#55mqy3d5x($(8qo5=-c_3x81vbrw*0u5pc"
