@@ -24,11 +24,12 @@ ALLOWED_HOSTS = ['*']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-# Load env variable that specifies first part of the url for the admin page
-# e.g. "production/" or "staging/"
-ADMIN_SITE_RELATIVE_URL_PATH = os.environ.get('ADMIN_SITE_RELATIVE_URL_PATH', 'staging/')
-# Set constant for the url of the admin site
-ADMIN_SITE_URL = f"{ADMIN_SITE_RELATIVE_URL_PATH}news-service/admin/"
+# The news service is deployed behind reverse NGINX proxies.
+# Therefore, we set the admin url here so that it redirects to the correct browser path. 
+# By default, the admin site will be accessible under admin/
+# TODO: Make use of https://docs.djangoproject.com/en/4.1/ref/settings/#use-x-forwarded-host
+# See: https://stackoverflow.com/a/47099986
+ADMIN_SITE_URL = os.environ.get('ADMIN_SITE_URL', 'admin/')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 if DEBUG:
