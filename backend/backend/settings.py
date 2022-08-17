@@ -51,7 +51,7 @@ LOGOUT_REDIRECT_URL = f"{APP_URL}/admin/logout/" """
 """ STATIC_URL = f'{APP_URL}static/' """
 # Only used to set the directory where the command "manage.py collectstatic" saves the static files
 # that later can be served by the nginx
-""" STATIC_ROOT =  os.path.join(BASE_DIR, 'static') """
+STATIC_ROOT =  os.path.join(BASE_DIR, 'static')
 
 # Possibly needed when multiple Django (admin) instances being used such that you are not logged in to all
 # but only to the one where you entered the username and password. For now not able to see an effect.
