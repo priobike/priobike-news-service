@@ -24,12 +24,46 @@ ALLOWED_HOSTS = ['*']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
+
+
+
 # The news service is deployed behind reverse NGINX proxies.
 # Therefore, we set the admin url here so that it redirects to the correct browser path. 
 # By default, the admin site will be accessible under admin/
 # TODO: Make use of https://docs.djangoproject.com/en/4.1/ref/settings/#use-x-forwarded-host
 # See: https://stackoverflow.com/a/47099986
-ADMIN_SITE_URL = os.environ.get('ADMIN_SITE_URL', 'admin/')
+APP_URL = os.environ.get('APP_URL', '')
+
+# When this is not set, django gives a 403 error after attempting to login
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:20051"]
+
+# Not able to see an effect:
+""" USE_X_FORWARDED_HOST = True """
+
+# Needed:
+FORCE_SCRIPT_NAME = APP_URL
+
+# Not needed:
+""" LOGIN_REDIRECT_URL = APP_URL
+LOGOUT_REDIRECT_URL = f"{APP_URL}/admin/logout/" """
+
+# Not able to see an effect:
+""" STATIC_URL = f'{APP_URL}static/' """
+# Only used to set the directory where the command "manage.py collectstatic" saves the static files
+# that later can be served by the nginx
+""" STATIC_ROOT =  os.path.join(BASE_DIR, 'static') """
+
+# Possibly needed when multiple Django (admin) instances being used such that you are not logged in to all
+# but only to the one where you entered the username and password. For now not able to see an effect.
+""" SESSION_COOKIE_PATH = APP_URL """
+
+# Setting this is contra productive (404):
+""" ADMIN_URL = r'^admin/' """
+# Needed:
+ADMIN_URL = 'admin/'
+
+
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
 if DEBUG:
