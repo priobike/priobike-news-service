@@ -17,7 +17,7 @@ pipeline {
                         cd backend && \
                         poetry run python manage.py test \
                     "'
-                sh 'docker-compose -f docker-compose.test.yml down -v -t 0'
+                sh 'docker-compose -f docker-compose.test.yml down --remove-orphans -v -t 0'
             }
         }
         
