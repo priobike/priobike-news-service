@@ -14,7 +14,6 @@ pipeline {
             steps {
                 sh 'docker-compose -f docker-compose.test.yml up --build -d'
                 sh 'docker exec backend /bin/bash -c " \
-                        sh ./wait-for-postgres.sh && \
                         cd backend && \
                         poetry run python manage.py test \
                     "'
