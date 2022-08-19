@@ -24,6 +24,19 @@ ALLOWED_HOSTS = ['*']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
+# The news service is deployed behind reverse NGINX proxies.
+# Therefore, we set the admin url here so that it redirects to the correct browser path. 
+# By default, the admin site will be accessible under admin/
+APP_URL = os.environ.get('APP_URL', '')
+FORCE_SCRIPT_NAME = APP_URL
+
+# When this is not set, django gives a 403 error after attempting to login
+CSRF_TRUSTED_ORIGIN = os.environ.get('CSRF_TRUSTED_ORIGIN', '')
+if CSRF_TRUSTED_ORIGIN:
+    CSRF_TRUSTED_ORIGINS = [CSRF_TRUSTED_ORIGIN]
+else:
+    CSRF_TRUSTED_ORIGINS = []
+
 # SECURITY WARNING: keep the secret key used in production secret!
 if DEBUG:
     SECRET_KEY = "django-insecure-h4wvbex$t4k_adc#55mqy3d5x($(8qo5=-c_3x81vbrw*0u5pc"
@@ -128,11 +141,16 @@ USE_I18N = True
 
 USE_TZ = True
 
+# Configure under which URL the admin interface will be provided.
+ADMIN_URL = 'admin/'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = f'{APP_URL}static/'
+
+# Collect static files in deployment so that NGINX can access them.
+STATIC_ROOT =  os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

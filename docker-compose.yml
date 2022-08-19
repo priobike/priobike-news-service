@@ -1,10 +1,14 @@
+networks:
+  production-network:
+    name: production-network
+
 services:
   db:
     image: postgres
     container_name: postgres
     hostname: db
-    ports:
-      - "5432:5432"
+    networks:
+      - production-network
     env_file:
       - dev.env
     volumes:
@@ -18,9 +22,11 @@ services:
 
   backend:
     container_name: backend
+    volumes:
+      - news_service_staticfiles:/code/backend/static/
+    networks:
+      - production-network
     build: .
-    ports:
-      - "8000:8000"
     env_file:
       - dev.env
     depends_on:
@@ -31,10 +37,49 @@ services:
       - |
         ./wait-for-postgres.sh
         poetry run python backend/manage.py migrate
+        poetry run python backend/manage.py collectstatic --no-input
+        poetry run python backend/manage.py createsuperuser --noinput
         poetry run python backend/manage.py runserver 0.0.0.0:8000
+    restart: unless-stopped
+
+  nginx_inner:
+    image: nginx:1.21.6
+    container_name: nginx_inner
+    hostname: nginx_inner
+    volumes:
+      - ./nginx_inner/conf.d:/etc/nginx/conf.d
+      - ./nginx_inner/proxy_params:/etc/nginx/proxy_params
+      # The static files for the news service
+      - news_service_staticfiles:/news-service/backend/static/
+    networks:
+      - production-network
+    depends_on:
+      - db
+      - backend
+    restart: unless-stopped
+
+  nginx_outer:
+    image: nginx:1.21.6
+    container_name: nginx_outer
+    hostname: nginx_outer
+    volumes:
+      - ./nginx_outer/conf.d:/etc/nginx/conf.d
+      - ./nginx_outer/proxy_params:/etc/nginx/proxy_params
+    # The NGINX proxy service is the only service that listens to the outside world
+    ports:
+      # This is important for the root NGINX proxy of the server.
+      - "20051:80" # HTTP
+    networks:
+      - production-network
+    depends_on:
+      - db
+      - backend
+      - nginx_inner
     restart: unless-stopped
 
 volumes:
   pg_data:
   pg_conf:
   pg_log:
+
+  news_service_staticfiles:
