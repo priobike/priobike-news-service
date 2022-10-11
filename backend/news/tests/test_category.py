@@ -1,10 +1,8 @@
 from datetime import timedelta
 
 from django.test import TestCase
-from django.urls import reverse
 from django.utils import timezone
-from news.models import Category, NewsArticle
-from news.tests.test_article import create_category_and_article
+from news.tests.test_article import create_category_and_article, get_news_articles_relative_url, get_news_category_relative_url
 
 
 class CategoryTests(TestCase):
@@ -19,11 +17,11 @@ class CategoryTests(TestCase):
         create_category_and_article(article_title=article_title, article_text=article_text, category_title=category_title, pub_date=pub_date)
         
         # Get article
-        response_news_articles = self.client.get(reverse('news:news-articles'))
+        response_news_articles = self.client.get(get_news_articles_relative_url())
         response_dict = response_news_articles.json()
         
         # Get corresponding news object
         category_id = response_dict[0]['category_id']
-        response_category = self.client.get(reverse('news:category', args=[category_id]))
+        response_category = self.client.get(get_news_category_relative_url(category_id))
         
         self.assertEqual(response_category.json()['title'], category_title)

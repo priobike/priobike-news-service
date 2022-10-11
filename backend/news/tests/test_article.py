@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.utils.http import urlencode
 from django.forms.models import model_to_dict
 from datetime import timedelta
-import json
+import os
 
 from news.models import Category, NewsArticle 
 
@@ -16,6 +16,20 @@ def serialize_article_to_dict(article: NewsArticle):
     article_dict = model_to_dict(article, fields=[field.name for field in article._meta.fields])
     article_dict = {"category_id" if k == 'category' else k: f'{v.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]}Z' if k == 'pub_date' else v for k,v in article_dict.items()}
     return article_dict
+
+def get_news_articles_relative_url():
+    app_url = os.environ.get('APP_URL', None)
+    if app_url is not None:
+        return reverse('news:news-articles').replace(os.environ.get('APP_URL', None), "/")
+    else:
+        return reverse('news:news-articles')
+
+def get_news_category_relative_url(category_id):
+    app_url = os.environ.get('APP_URL', None)
+    if app_url is not None:
+        return reverse('news:category', args=[category_id]).replace(os.environ.get('APP_URL', None), "/")
+    else:
+        return reverse('news:category', args=[category_id])
 
 class ArticleTests(TestCase):
     article_texts = [
@@ -47,7 +61,7 @@ class ArticleTests(TestCase):
         create_category_and_article(article_title=self.article_titles[0], article_text=self.article_texts[0], category_title=self.category_names[0], pub_date=pub_date)
         
         # Check that "Article 1" doesn't get returned because its date is in the future
-        response = self.client.get(reverse('news:news-articles'))
+        response = self.client.get(get_news_articles_relative_url())
         self.assertQuerysetEqual(response.json(), [])
         
         # Article 2
@@ -55,7 +69,7 @@ class ArticleTests(TestCase):
         article = create_category_and_article(article_title=self.article_titles[1], article_text=self.article_texts[1], category_title=self.category_names[1], pub_date=pub_date)
         
         # Check that "Article 2" gets returned because its date is in the past
-        response = self.client.get(reverse('news:news-articles'))
+        response = self.client.get(get_news_articles_relative_url())
         article_dict = serialize_article_to_dict(article)
         self.assertEqual(response.json(), [article_dict])
         
@@ -64,7 +78,7 @@ class ArticleTests(TestCase):
         article = create_category_and_article(article_title=self.article_titles[2], article_text=self.article_texts[2], category_title=self.category_names[2], pub_date=pub_date)
         
         # Check that both "Article 2" and "Article 3" get returned 
-        response = self.client.get(reverse('news:news-articles'))
+        response = self.client.get(get_news_articles_relative_url())
         self.assertEqual(len(response.json()), 2)
         
     def test_only_return_news_articles_up_to_specific_date(self):
@@ -89,17 +103,16 @@ class ArticleTests(TestCase):
         # Create hash for the articles that got released before or on the test_date
         articles = [article1, article2]
         articles_serialized = [serialize_article_to_dict(article) for article in articles]
-        articles_json = json.dumps(articles_serialized)
         
         # Get articles:
-        base_url = reverse('news:news-articles')
+        base_url = get_news_articles_relative_url()
         response = self.client.get('{base_url}?{querystring}'.format(base_url=base_url, querystring=urlencode({'from': f'{test_date.strftime("%Y-%m-%dT%H:%M:%S.%f")}Z'})))
         
         self.assertEqual(response.json(), articles_serialized)
         
         # Get articles:
         test_date = timezone.now() - timedelta(days=4)
-        base_url = reverse('news:news-articles')
+        base_url = get_news_articles_relative_url()
         response = self.client.get('{base_url}?{querystring}'.format(base_url=base_url, querystring=urlencode({'from': f'{test_date.strftime("%Y-%m-%dT%H:%M:%S.%f")}Z'})))
         
         self.assertEqual(response.json(), articles_serialized)
@@ -113,15 +126,15 @@ class ArticleTests(TestCase):
             create_category_and_article(article_title=self.article_titles[i], article_text=self.article_texts[i], category_title=self.category_names[i], pub_date=pub_date)
         
         # Check that four articles get returned
-        response = self.client.get(reverse('news:news-articles'))
+        response = self.client.get(get_news_articles_relative_url())
         self.assertEqual(len(response.json()), 4)
         
         # Try injection and check status code
         test_date = "DELETE * FROM NewsArticle; "
-        base_url = reverse('news:news-articles')
+        base_url = get_news_articles_relative_url()
         response = self.client.get('{base_url}?{querystring}'.format(base_url=base_url, querystring=urlencode({'from': test_date})))
         self.assertEqual(response.status_code, 400)
         
         # Check that four articles get returned
-        response = self.client.get(reverse('news:news-articles'))
+        response = self.client.get(get_news_articles_relative_url())
         self.assertEqual(len(response.json()), 4)

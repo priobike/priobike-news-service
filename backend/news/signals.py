@@ -1,6 +1,6 @@
-from os import environ
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.conf import settings
 from news.models import NewsArticle
 import firebase_admin
 from firebase_admin import credentials
@@ -14,9 +14,9 @@ def send_notification_for_news_article(sender, instance, created, **kwargs):
     """
     
     # Don't send message on updates, only when new articles are created.
-    if created:
+    if created and not settings.TESTING:
         # Authenticate with firebase admin serice key.
-        cred = credentials.Certificate("backend/news/config/priobikefcm-firebase-adminsdk-evhd7-813bd37626.json")
+        cred = credentials.Certificate(os.path.join(settings.BASE_DIR, "../backend/news/config/priobikefcm-firebase-adminsdk-evhd7-813bd37626.json"))
         app = firebase_admin.initialize_app(cred)
         
         # Truncate if the text is to long.
