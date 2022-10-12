@@ -21,8 +21,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install poetry
-        run: curl -sSL https://install.python-poetry.org | python -
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
       
       - name: Install dependencies
         run: poetry install
