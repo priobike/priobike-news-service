@@ -63,6 +63,11 @@ def send_notification_for_news_article(sender, instance, created, **kwargs):
     Mobile clients can visualize it as push notifications.
     """
 
+    # In testing mode, we don't want to send notifications.
+    if settings.TESTING:
+        # Don't print anything in testing mode, to avoid cluttering the test output.
+        return
+
     # In debug mode, we don't want to send notifications.
     if settings.DEBUG:
         print('Debug mode is on, skipping notification sending.')
@@ -74,7 +79,7 @@ def send_notification_for_news_article(sender, instance, created, **kwargs):
         return
         
     # Authenticate with firebase admin serice key.
-    cred = Certificate(os.path.join(settings.BASE_DIR, "config/fcm-key.json"))
+    cred = Certificate(settings.FCM_PUSH_NOTIFICATION_CONF)
     app = initialize_app(cred)
     
     # Truncate if the text is to long.
