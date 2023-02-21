@@ -86,10 +86,9 @@ def send_notification_for_news_article(sender, instance, created, **kwargs):
     body = (instance.text[:100] + '...') if len(instance.text) > 100 else instance.text
 
     # Create the FCM message.
-    payload = { 'environment': settings.FCM_PUSH_NOTIFICATION_ENVIRONMENT }
     notification = Notification(title = instance.title, body = body)
-    topic = settings.FCM_PUSH_NOTIFICATION_TOPIC
-    message = Message(data=payload, notification=notification, topic=topic)
+    topic = f"/topics/{settings.FCM_PUSH_NOTIFICATION_ENVIRONMENT}"
+    message = Message(notification=notification, topic=topic)
 
     # Send a message to the devices subscribed to the provided topic.
     response = send(message)

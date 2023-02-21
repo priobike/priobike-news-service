@@ -21,7 +21,6 @@ ALLOWED_HOSTS = ['*']
 
 # One of the following: 'dev' / 'staging' / 'production'
 FCM_PUSH_NOTIFICATION_ENVIRONMENT = os.environ.get('FCM_PUSH_NOTIFICATION_ENVIRONMENT', 'dev')
-FCM_PUSH_NOTIFICATION_TOPIC = os.environ.get('FCM_PUSH_NOTIFICATION_TOPIC', '/topics/Neuigkeiten')
 FCM_PUSH_NOTIFICATION_CONF = os.path.join(BASE_DIR.parent, "config/fcm-key.json")
 
 # Quick-start development settings - unsuitable for production
