@@ -12,7 +12,7 @@ RUN pip install poetry
 WORKDIR /code
 
 # Use the admin interface to check the health of the application
-HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=10s --timeout=8s --start-period=20s --retries=10 \
     CMD curl --fail http://localhost:8000/admin || exit 1
 
 # Install Python dependencies separated from the
