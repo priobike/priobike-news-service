@@ -84,3 +84,4 @@ A microservice to create and publish news to the PrioBike app.
 - Create super user for Django admin panel: ```poetry run python manage.py createsuperuser```
 - Start local development server: ```poetry run python manage.py runserver```
 - Run tests: ```poetry run python manage.py test```
+ 
