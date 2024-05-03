@@ -19,6 +19,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 ALLOWED_HOSTS = ['*']
 
+HEALTHCHECK_TOKEN = os.environ.get('HEALTHCHECK_TOKEN', 'healthcheck-token')
+
 # One of the following: 'dev' / 'staging' / 'production'
 FCM_PUSH_NOTIFICATION_ENVIRONMENT = os.environ.get('FCM_PUSH_NOTIFICATION_ENVIRONMENT', 'dev')
 FCM_PUSH_NOTIFICATION_CONF = os.path.join(BASE_DIR.parent, "config/fcm-key.json")
@@ -28,6 +30,9 @@ FCM_PUSH_NOTIFICATION_CONF = os.path.join(BASE_DIR.parent, "config/fcm-key.json"
 
 # Detect whether it's a test run or not.
 TESTING = sys.argv[1:2] == ['test']
+
+# Detect whether we run in worker or manager mode.
+WORKER_MODE = 'True' in os.environ.get('WORKER_MODE', 'False')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
@@ -56,13 +61,14 @@ else:
 INSTALLED_APPS = [
     'news',
 
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+if not WORKER_MODE:
+    INSTALLED_APPS.append('django.contrib.admin')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

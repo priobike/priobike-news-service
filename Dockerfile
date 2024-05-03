@@ -47,6 +47,8 @@ ENV POSTGRES_DB=news-db
 ENV POSTGRES_HOST=localhost
 ENV POSTGRES_PORT=5432
 
+ENV HEALTHCHECK_TOKEN=healthcheck-token
+
 # Use this argument to invalidate the cache of subsequent steps.
 ARG CACHE_DATE=1970-01-01
 
@@ -54,6 +56,6 @@ FROM builder AS production
 ENV DJANGO_DEBUG_MODE=False
 # Preheat our database, by running migrations and pre-loading data
 RUN ./run-preheating.sh
-HEALTHCHECK --interval=10s --timeout=8s --start-period=20s --retries=10 \
-    CMD curl --fail http://localhost:8000/admin || exit 1
+HEALTHCHECK --interval=60s --timeout=10s --retries=5 --start-period=10s \
+  CMD curl --fail http://localhost:8000/healthcheck?token=healthcheck-token || exit 1
 CMD "./run-server.sh"

@@ -1,29 +1,66 @@
+version: '3'
+
 networks:
-  production-network:
-    name: production-network
+  test-network:
+    name: test-network
 
 services:
   manager:
-    container_name: manager
     volumes:
-      - news_service_staticfiles:/code/backend/static/
       # Persist news articles that get created.
       - pg_conf:/etc/postgresql
       - pg_log:/var/log/postgresql
       - pg_data:/var/lib/postgresql/data
     networks:
-      - production-network
-    ports:
-      - "8000:8000"
+      - test-network
     build: .
+    volumes:
+      - ./:/code
     environment:
       - DJANGO_DEBUG_MODE=True
       - FCM_PUSH_NOTIFICATION_ENVIRONMENT=dev
     command: ./run-dev.sh
     restart: unless-stopped
 
+  worker:
+    hostname: worker{{.Task.Slot}}.local
+    networks:
+      - test-network
+    build: .
+    volumes:
+      - ./:/code
+    environment:
+      - DJANGO_DEBUG_MODE=True
+      - WORKER_MODE=True
+    command: ./run-dev.sh
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.worker.rule=PathPrefix(`/`)
+      - traefik.http.routers.worker.entryPoints=web
+      - traefik.http.services.worker.loadbalancer.server.port=8000
+    deploy:
+      mode: replicated
+      endpoint_mode: dnsrr
+      replicas: 2
+
+  traefik:
+    image: traefik:v2.9
+    hostname: traefik
+    networks:
+      - test-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports: 
+      - "80:80"
+      - "8080:8080"
+    command:
+      - --providers.docker
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=test-network
+      - --entryPoints.web.address=:80
+
 volumes:
   pg_data:
   pg_conf:
   pg_log:
-  news_service_staticfiles:
