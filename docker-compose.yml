@@ -19,6 +19,10 @@ services:
     environment:
       - DJANGO_DEBUG_MODE=True
       - FCM_PUSH_NOTIFICATION_ENVIRONMENT=dev
+      - WORKER_HOST=worker
+      - WORKER_PORT=8000
+    ports:
+      - "8000:8000"
     command: ./run-dev.sh
     restart: unless-stopped
 

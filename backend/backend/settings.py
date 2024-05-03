@@ -33,6 +33,15 @@ TESTING = sys.argv[1:2] == ['test']
 
 # Detect whether we run in worker or manager mode.
 WORKER_MODE = 'True' in os.environ.get('WORKER_MODE', 'False')
+if not WORKER_MODE:
+    # Needed to find the workers.
+    WORKER_HOST = os.environ.get('WORKER_HOST')
+    if not WORKER_HOST:
+        raise ValueError('WORKER_HOST is not set.')
+    WORKER_PORT = os.environ.get('WORKER_PORT', 8000)
+else:
+    WORKER_HOST = None
+    WORKER_PORT = None
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'

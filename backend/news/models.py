@@ -1,7 +1,9 @@
 import hashlib
 import json
 import os
+import socket
 
+import requests
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
@@ -53,6 +55,32 @@ class NewsArticle(models.Model):
 
     class Meta:
         ordering = ['-pub_date']
+
+
+@receiver(post_save, sender=NewsArticle)
+def sync_workers(sender, instance, created, **kwargs):
+    """
+    Sync the new news article with the worker instances.
+    """
+    # Lookup all workers using DNS.
+    if settings.WORKER_MODE:
+        return
+    
+    host = settings.WORKER_HOST
+    port = settings.WORKER_PORT
+    
+    worker_hosts = socket.getaddrinfo(host, port, proto=socket.IPPROTO_TCP)
+    worker_ips = [worker_host[4][0] for worker_host in worker_hosts]
+
+    # TODO: Implement the sync logic here.
+    print(f"Syncing news article with workers: {worker_ips}")
+
+    # Fetch the status for now
+    for worker_ip in worker_ips:
+        print(f"Fetching status from worker: {worker_ip}")
+        url = f"http://{worker_ip}:{port}/status"
+        response = requests.get(url)
+        print(f"Status from worker {worker_ip}: {response.json()}")
 
 
 @receiver(post_save, sender=NewsArticle)
