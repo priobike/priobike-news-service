@@ -91,8 +91,11 @@ def send_notification_for_news_article(sender, instance, created, **kwargs):
     message = Message(notification=notification, topic=topic)
 
     # Send a message to the devices subscribed to the provided topic.
-    response = send(message)
-    # Response is a message ID string.
-    print('Successfully sent FCM message:', response)
+    if settings.FCM_PUSH_NOTIFICATION_ENVIRONMENT == 'dev':
+        print('[DEV] Sending message to topic:', topic)
+    else:
+        response = send(message)
+        # Response is a message ID string.
+        print('Successfully sent FCM message:', response)
     
     delete_app(app)
