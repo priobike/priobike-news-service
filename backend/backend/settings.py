@@ -36,8 +36,6 @@ WORKER_MODE = 'True' in os.environ.get('WORKER_MODE', 'False')
 if not WORKER_MODE:
     # Needed to find the workers.
     WORKER_HOST = os.environ.get('WORKER_HOST')
-    if not WORKER_HOST:
-        raise ValueError('WORKER_HOST is not set.')
 else:
     WORKER_HOST = None
 
@@ -47,8 +45,6 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 SYNC_PORT = os.environ.get('SYNC_PORT', 8001)
 SYNC_EXPOSED = 'True' in os.environ.get('SYNC_EXPOSED', 'False')
 SYNC_KEY = os.environ.get('SYNC_KEY')
-if not SYNC_KEY:
-    raise ValueError('SYNC_KEY is not set.')
 
 # The news service is deployed behind reverse NGINX proxies.
 # Therefore, we set the admin url here so that it redirects to the correct browser path. 
