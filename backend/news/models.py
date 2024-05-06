@@ -128,6 +128,8 @@ def sync_workers(sender, instance, created, **kwargs):
     # Lookup all workers using DNS.
     if settings.WORKER_MODE:
         return
+    if settings.TESTING:
+        return
     
     host = settings.WORKER_HOST
     port = settings.SYNC_PORT
