@@ -38,13 +38,17 @@ if not WORKER_MODE:
     WORKER_HOST = os.environ.get('WORKER_HOST')
     if not WORKER_HOST:
         raise ValueError('WORKER_HOST is not set.')
-    WORKER_PORT = os.environ.get('WORKER_PORT', 8000)
 else:
     WORKER_HOST = None
-    WORKER_PORT = None
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+
+SYNC_PORT = os.environ.get('SYNC_PORT', 8001)
+SYNC_EXPOSED = 'True' in os.environ.get('SYNC_EXPOSED', 'False')
+SYNC_KEY = os.environ.get('SYNC_KEY')
+if not SYNC_KEY:
+    raise ValueError('SYNC_KEY is not set.')
 
 # The news service is deployed behind reverse NGINX proxies.
 # Therefore, we set the admin url here so that it redirects to the correct browser path. 
@@ -112,26 +116,17 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        
+        'NAME': os.environ.get('POSTGRES_NAME'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': os.environ.get('POSTGRES_HOST'),
+        'PORT': os.environ.get('POSTGRES_PORT'),
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            
-            'NAME': os.environ.get('POSTGRES_NAME'),
-            'USER': os.environ.get('POSTGRES_USER'),
-            'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-            'HOST': os.environ.get('POSTGRES_HOST'),
-            'PORT': os.environ.get('POSTGRES_PORT'),
-        }
-    }
+}
 
 
 # Password validation

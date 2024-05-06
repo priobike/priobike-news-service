@@ -67,20 +67,43 @@ def sync_workers(sender, instance, created, **kwargs):
         return
     
     host = settings.WORKER_HOST
-    port = settings.WORKER_PORT
+    port = settings.SYNC_PORT
     
     worker_hosts = socket.getaddrinfo(host, port, proto=socket.IPPROTO_TCP)
     worker_ips = [worker_host[4][0] for worker_host in worker_hosts]
 
-    # TODO: Implement the sync logic here.
-    print(f"Syncing news article with workers: {worker_ips}")
+    # Write a json that contains all news articles and categories.
+    data = {
+        'key': settings.SYNC_KEY,
+        'categories': [
+            {
+                'title': category.title,
+            } for category in Category.objects.all()
+        ],
+        'articles': [
+            {
+                'text': article.text,
+                'title': article.title,
+                'pubDate': article.pub_date.isoformat(),
+                'category': article.category.title if article.category else None,
+            } for article in NewsArticle.objects.all()
+        ]
+    }
 
     # Fetch the status for now
     for worker_ip in worker_ips:
-        print(f"Fetching status from worker: {worker_ip}")
-        url = f"http://{worker_ip}:{port}/status"
-        response = requests.get(url)
-        print(f"Status from worker {worker_ip}: {response.json()}")
+        print(f"Syncing with worker: {worker_ip}")
+        url = f"http://{worker_ip}:{port}/sync/sync"
+        response = requests.post(url, json=data)
+        # Parse the response as json
+        if response.status_code != 200:
+            print(f"Failed to sync with worker {worker_ip}: status {response.status_code}")
+            raise Exception(f"Failed to sync with worker {worker_ip}: status {response.status_code}")
+        status = json.loads(response.text).get('status')
+        if status != 'ok':
+            print(f"Failed to sync with worker {worker_ip}: {status}")
+            raise Exception(f"Failed to sync with worker {worker_ip}: {status}")
+        print(f"Synced with worker {worker_ip}: {status}")
 
 
 @receiver(post_save, sender=NewsArticle)

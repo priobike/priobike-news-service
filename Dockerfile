@@ -52,6 +52,9 @@ ENV HEALTHCHECK_TOKEN=healthcheck-token
 # Use this argument to invalidate the cache of subsequent steps.
 ARG CACHE_DATE=1970-01-01
 
+# Make the postgres persistance dirs writable for every user
+RUN chmod -R 777 /var/lib/postgresql/data
+
 FROM builder AS production
 ENV DJANGO_DEBUG_MODE=False
 # Preheat our database, by running migrations and pre-loading data

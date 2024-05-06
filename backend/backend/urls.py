@@ -26,3 +26,6 @@ urlpatterns = [
 ]
 if not settings.WORKER_MODE:
     urlpatterns.append(path(settings.ADMIN_URL, admin.site.urls))
+
+if settings.SYNC_EXPOSED:
+    urlpatterns.append(path('sync/', include('sync.urls')))
