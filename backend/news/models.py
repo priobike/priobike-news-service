@@ -7,6 +7,7 @@ import requests
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
+from django.db.transaction import atomic
 from django.dispatch import receiver
 from django.utils import timezone
 from firebase_admin import delete_app, initialize_app
@@ -57,21 +58,48 @@ class NewsArticle(models.Model):
         ordering = ['-pub_date']
 
 
-@receiver(post_save, sender=NewsArticle)
-def sync_workers(sender, instance, created, **kwargs):
-    """
-    Sync the new news article with the worker instances.
-    """
-    # Lookup all workers using DNS.
-    if settings.WORKER_MODE:
-        return
-    
-    host = settings.WORKER_HOST
-    port = settings.SYNC_PORT
-    
-    worker_hosts = socket.getaddrinfo(host, port, proto=socket.IPPROTO_TCP)
-    worker_ips = [worker_host[4][0] for worker_host in worker_hosts]
+def sync_from_content(data):
+    with atomic():
+        # Clear the database
+        Category.objects.all().delete()
+        NewsArticle.objects.all().delete()
 
+        # Load the categories contained in the response.
+        categories = data.get("categories")
+        for category in categories:
+            title = category.get("title")
+            try:
+                _, created = Category.objects.get_or_create(title=title)
+                if created:
+                    print(f"Created category: {title}")
+            except Exception as err:
+                print(f"Error during sync: {err}")
+                raise err
+
+        # Load the articles contained in the response.
+        articles = data.get("articles")
+        for article in articles:
+            category_title = article.get("category")
+            article_title = article.get("title")
+            if category_title:
+                category = Category.objects.get(title=category_title)
+            else:
+                category = None
+            try:
+                _, created = NewsArticle.objects.get_or_create(
+                    text=article.get("text"),
+                    title=article_title, 
+                    pub_date=timezone.datetime.fromisoformat(article.get("pubDate")), 
+                    category=category,
+                )
+            except Exception as err:
+                print(f"Error during sync: {err}")
+                raise err
+            if created:
+                print(f"Created article: {article_title}")
+
+
+def get_sync_content():
     # Write a json that contains all news articles and categories.
     data = {
         'key': settings.SYNC_KEY,
@@ -89,6 +117,25 @@ def sync_workers(sender, instance, created, **kwargs):
             } for article in NewsArticle.objects.all()
         ]
     }
+    return data
+
+
+@receiver(post_save, sender=NewsArticle)
+def sync_workers(sender, instance, created, **kwargs):
+    """
+    Sync the new news article with the worker instances.
+    """
+    # Lookup all workers using DNS.
+    if settings.WORKER_MODE:
+        return
+    
+    host = settings.WORKER_HOST
+    port = settings.SYNC_PORT
+    
+    worker_hosts = socket.getaddrinfo(host, port, proto=socket.IPPROTO_TCP)
+    worker_ips = [worker_host[4][0] for worker_host in worker_hosts]
+
+    data = get_sync_content()
 
     # Fetch the status for now
     for worker_ip in worker_ips:

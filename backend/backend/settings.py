@@ -73,6 +73,7 @@ else:
 
 INSTALLED_APPS = [
     'news',
+    'sync',
 
     'django.contrib.auth',
     'django.contrib.contenttypes',
