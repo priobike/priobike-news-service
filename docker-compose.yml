@@ -16,6 +16,7 @@ services:
       - pg_log:/var/log/postgresql
       - pg_data:/var/lib/postgresql/data
     environment:
+      - DJANGO_SUPERUSER_PASSWORD=secret
       - DJANGO_DEBUG_MODE=True
       - FCM_PUSH_NOTIFICATION_ENVIRONMENT=dev
       - WORKER_HOST=worker

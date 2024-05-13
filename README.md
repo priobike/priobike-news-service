@@ -1,7 +1,7 @@
 # News Service
 A microservice to create and publish news to the PrioBike app.
 
-## REST-API Endpoints
+## WORKER REST-API Endpoints
 - ```api/news```: Get all news articles
     - optional query params:
         - ```from```: Specifies the date(time) from which on new news articles shoud be returned.released on or before the ```from``` date(time).
