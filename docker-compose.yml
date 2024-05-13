@@ -6,16 +6,15 @@ networks:
 
 services:
   manager:
-    volumes:
-      # Persist news articles that get created.
-      - pg_conf:/etc/postgresql
-      - pg_log:/var/log/postgresql
-      - pg_data:/var/lib/postgresql/data
     networks:
       - test-network
     build: .
     volumes:
       - ./:/code
+      # Persist news articles that get created.
+      - pg_conf:/etc/postgresql
+      - pg_log:/var/log/postgresql
+      - pg_data:/var/lib/postgresql/data
     environment:
       - DJANGO_DEBUG_MODE=True
       - FCM_PUSH_NOTIFICATION_ENVIRONMENT=dev
