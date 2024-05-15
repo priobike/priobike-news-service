@@ -19,6 +19,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 ALLOWED_HOSTS = ['*']
 
+HEALTHCHECK_TOKEN = os.environ.get('HEALTHCHECK_TOKEN', 'healthcheck-token')
+
 # One of the following: 'dev' / 'staging' / 'production'
 FCM_PUSH_NOTIFICATION_ENVIRONMENT = os.environ.get('FCM_PUSH_NOTIFICATION_ENVIRONMENT', 'dev')
 FCM_PUSH_NOTIFICATION_CONF = os.path.join(BASE_DIR.parent, "config/fcm-key.json")
@@ -29,8 +31,20 @@ FCM_PUSH_NOTIFICATION_CONF = os.path.join(BASE_DIR.parent, "config/fcm-key.json"
 # Detect whether it's a test run or not.
 TESTING = sys.argv[1:2] == ['test']
 
+# Detect whether we run in worker or manager mode.
+WORKER_MODE = 'True' in os.environ.get('WORKER_MODE', 'False')
+if not WORKER_MODE:
+    # Needed to find the workers.
+    WORKER_HOST = os.environ.get('WORKER_HOST')
+else:
+    WORKER_HOST = None
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+
+SYNC_PORT = os.environ.get('SYNC_PORT', 8001)
+SYNC_EXPOSED = 'True' in os.environ.get('SYNC_EXPOSED', 'False')
+SYNC_KEY = os.environ.get('SYNC_KEY')
 
 # The news service is deployed behind reverse NGINX proxies.
 # Therefore, we set the admin url here so that it redirects to the correct browser path. 
@@ -55,14 +69,16 @@ else:
 
 INSTALLED_APPS = [
     'news',
+    'sync',
 
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+if not WORKER_MODE:
+    INSTALLED_APPS.append('django.contrib.admin')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -97,25 +113,22 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        
+        'NAME': os.environ.get('POSTGRES_NAME'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': os.environ.get('POSTGRES_HOST'),
+        'PORT': os.environ.get('POSTGRES_PORT'),
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            
-            'NAME': os.environ.get('POSTGRES_NAME'),
-            'USER': os.environ.get('POSTGRES_USER'),
-            'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-            'HOST': os.environ.get('POSTGRES_HOST'),
-            'PORT': os.environ.get('POSTGRES_PORT'),
-        }
+}
+
+if TESTING:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 
 
