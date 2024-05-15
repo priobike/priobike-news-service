@@ -18,6 +18,12 @@ if [ "$WORKER_MODE" = "True" ]; then
         echo "Manager is unavailable - sleeping"
         sleep 1
     done
+else
+    # Create a superuser for the manager
+    poetry run python manage.py createsuperuser \
+        --noinput \
+        --username admin \
+        --email admin@example.com
 fi
 
 SYNC_EXPOSED="True" poetry run gunicorn backend.wsgi:application --workers 4 --bind 0.0.0.0:8001 &
