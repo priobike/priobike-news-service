@@ -61,7 +61,7 @@ jobs:
 
       - name: Perpare Firebase Cloud messaging secret 
         run: |
-          echo "$FIREBASE_CLOUD_MESSAGING_KEY_JSON_BASE64" | base64 --decode > config/fcm-key.json
+          echo "$FIREBASE_CLOUD_MESSAGING_KEY_JSON_BASE64" | base64 -d > config/fcm-key.json
         env:
           FIREBASE_CLOUD_MESSAGING_KEY_JSON_BASE64: ${{ secrets.FIREBASE_CLOUD_MESSAGING_KEY_JSON_BASE64 }}
 
