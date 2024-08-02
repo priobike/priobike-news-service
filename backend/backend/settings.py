@@ -21,7 +21,7 @@ ALLOWED_HOSTS = ['*']
 
 HEALTHCHECK_TOKEN = os.environ.get('HEALTHCHECK_TOKEN', 'healthcheck-token')
 
-# One of the following: 'dev' / 'staging' / 'production'
+# One of the following: 'dev' / 'staging' / 'production' / 'release'
 FCM_PUSH_NOTIFICATION_ENVIRONMENT = os.environ.get('FCM_PUSH_NOTIFICATION_ENVIRONMENT', 'dev')
 FCM_PUSH_NOTIFICATION_CONF = os.path.join(BASE_DIR.parent, "config/fcm-key.json")
 
@@ -122,6 +122,8 @@ DATABASES = {
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
         'HOST': os.environ.get('POSTGRES_HOST'),
         'PORT': os.environ.get('POSTGRES_PORT'),
+
+        'TIME_ZONE': 'Europe/Berlin',
     }
 }
 
@@ -156,7 +158,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'de-de'
 
-TIME_ZONE = 'Africa/Mbabane'
+TIME_ZONE = 'Europe/Berlin'
 
 USE_I18N = True
 
