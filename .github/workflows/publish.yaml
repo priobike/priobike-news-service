@@ -59,6 +59,12 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
+      - name: Perpare Firebase Cloud messaging secret 
+        run: |
+          echo "$FIREBASE_CLOUD_MESSAGING_KEY_JSON_BASE64" | base64 --decode > config/fcm-key.json
+        env:
+          FIREBASE_CLOUD_MESSAGING_KEY_JSON_BASE64: ${{ secrets.FIREBASE_CLOUD_MESSAGING_KEY_JSON_BASE64 }}
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
