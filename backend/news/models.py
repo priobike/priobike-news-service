@@ -177,6 +177,11 @@ def send_notification_for_news_article(sender, instance, created, **kwargs):
     if not created:
         print('News article was updated, skipping notification sending.')
         return
+
+    # Don't send messages from workers.
+    if settings.WORKER_MODE:
+        print('This instance is a worker, skipping notification sending.')
+        return
         
     # Authenticate with firebase admin serice key.
     cred = Certificate(settings.FCM_PUSH_NOTIFICATION_CONF)
