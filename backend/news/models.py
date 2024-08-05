@@ -38,17 +38,25 @@ class NewsArticle(models.Model):
 
     md5 = models.CharField(max_length=32)
 
-    def save(self, *args, **kwargs):
-        if not self.md5:
-            data = {
-                "text": self.text, 
-                "title": self.title,
-                "pub_date": str(self.pub_date),
-                "category": None if not self.category else repr(self.category),
-            }
-            data_json = json.dumps(data)
-            self.md5 = hashlib.md5(data_json.encode('utf-8')).hexdigest()
-        return super().save(*args, **kwargs)
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        print("Saving News Article")
+        data = {
+            "text": self.text, 
+            "title": self.title,
+            "pub_date": str(self.pub_date),
+            "category": None if not self.category else repr(self.category),
+        }
+        data_json = json.dumps(data)
+        self.md5 = hashlib.md5(data_json.encode('utf-8')).hexdigest()
+        # We need to add md5 to the explicit set of update_fields if they are set because md5 needs to be updated 
+        # always as soon as any other field is updated. If update_fields is not set every field is updated and we 
+        # don't need to add md5 explicitly.
+        # More information:
+        # - https://docs.djangoproject.com/en/5.0/releases/4.2/#setting-update-fields-in-model-save-may-now-be-required
+        # - https://docs.djangoproject.com/en/4.2/topics/db/models/#overriding-predefined-model-methods
+        if update_fields is not None and "md5" not in update_fields:
+            update_fields = {"md5"}.union(update_fields)
+        return super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
 
     def __str__(self):
