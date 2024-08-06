@@ -11,20 +11,13 @@ from news.models import Category, NewsArticle
 
 
 class NewsResource(View):
-    def get(self, request):        
-        last_sync_date = request.GET.get("from", None)
-
+    def get(self, _):        
         published_articles = NewsArticle.objects.filter(pub_date__lte=timezone.now())
-        if last_sync_date:
-            try:
-                published_articles = published_articles.filter(pub_date__gt=last_sync_date)
-            except ValidationError:
-                return HttpResponseBadRequest(json.dumps({"error": "Invalid date format."}))
         
         return JsonResponse(list(published_articles.values()), safe=False)
 
       
 class CategoryResource(View):
-    def get(self, request, category_id):
+    def get(self, _, category_id):
         category = get_object_or_404(Category, pk=category_id)
         return JsonResponse(model_to_dict(category), safe=False)

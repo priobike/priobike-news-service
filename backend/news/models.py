@@ -6,7 +6,7 @@ import socket
 import requests
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.db.transaction import atomic
 from django.dispatch import receiver
 from django.utils import timezone
@@ -128,8 +128,8 @@ def get_sync_content():
     return data
 
 
-@receiver(post_save, sender=NewsArticle)
-def sync_workers(sender, instance, created, **kwargs):
+@receiver([post_save, post_delete], sender=NewsArticle)
+def sync_workers(**kwargs):
     """
     Sync the new news article with the worker instances.
     """
