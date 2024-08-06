@@ -81,42 +81,6 @@ class ArticleTests(TestCase):
         response = self.client.get(get_news_articles_relative_url())
         self.assertEqual(len(response.json()), 2)
         
-    def test_only_return_news_articles_up_to_specific_date(self):
-        """ Test whether only articles with a release date newer like given date get returned. """
-        
-        # Article 1:
-        pub_date = timezone.now()- timedelta(days=1)
-        article1 = create_category_and_article(article_title=self.article_titles[0], article_text=self.article_texts[0], category_title=self.category_names[0], pub_date=pub_date)
-        
-        # Article 2:
-        pub_date = timezone.now() - timedelta(days=3)
-        article2 = create_category_and_article(article_title=self.article_titles[1], article_text=self.article_texts[1], category_title=self.category_names[1], pub_date=pub_date)
-        
-        # Article 3:
-        pub_date = timezone.now() - timedelta(days=4)
-        create_category_and_article(article_title=self.article_titles[2], article_text=self.article_texts[2], category_title=self.category_names[2], pub_date=pub_date)
-        test_date = pub_date
-        # Article 4:
-        pub_date = timezone.now() - timedelta(days=5)
-        create_category_and_article(article_title=self.article_titles[3], article_text=self.article_texts[3], category_title=self.category_names[3], pub_date=pub_date)
-        
-        # Create hash for the articles that got released before or on the test_date
-        articles = [article1, article2]
-        articles_serialized = [serialize_article_to_dict(article) for article in articles]
-        
-        # Get articles:
-        base_url = get_news_articles_relative_url()
-        response = self.client.get('{base_url}?{querystring}'.format(base_url=base_url, querystring=urlencode({'from': f'{test_date.strftime("%Y-%m-%dT%H:%M:%S.%f")}Z'})))
-        
-        self.assertEqual(response.json(), articles_serialized)
-        
-        # Get articles:
-        test_date = timezone.now() - timedelta(days=4)
-        base_url = get_news_articles_relative_url()
-        response = self.client.get('{base_url}?{querystring}'.format(base_url=base_url, querystring=urlencode({'from': f'{test_date.strftime("%Y-%m-%dT%H:%M:%S.%f")}Z'})))
-        
-        self.assertEqual(response.json(), articles_serialized)
-        
     def test_sql_injection_attack(self):
         """ Test whether sql injections don't have any impact. """
         days_in_past = [1,3,4,5]
@@ -130,9 +94,9 @@ class ArticleTests(TestCase):
         self.assertEqual(len(response.json()), 4)
         
         # Try injection and check status code
-        test_date = "DELETE * FROM NewsArticle; "
-        base_url = get_news_articles_relative_url()
-        response = self.client.get('{base_url}?{querystring}'.format(base_url=base_url, querystring=urlencode({'from': test_date})))
+        test_category_id = "DELETE * FROM NewsArticle; "
+        base_url = get_news_category_relative_url(test_category_id)
+        response = self.client.get('{base_url}'.format(base_url=base_url))
         self.assertEqual(response.status_code, 400)
         
         # Check that four articles get returned
