@@ -94,9 +94,9 @@ class ArticleTests(TestCase):
         self.assertEqual(len(response.json()), 4)
         
         # Try injection and check status code
-        test_date = "DELETE * FROM NewsArticle; "
-        base_url = get_news_articles_relative_url()
-        response = self.client.get('{base_url}?{querystring}'.format(base_url=base_url, querystring=urlencode({'from': test_date})))
+        test_category_id = "DELETE * FROM NewsArticle; "
+        base_url = get_news_category_relative_url(test_category_id)
+        response = self.client.get('{base_url}'.format(base_url=base_url))
         self.assertEqual(response.status_code, 400)
         
         # Check that four articles get returned

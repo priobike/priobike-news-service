@@ -19,5 +19,8 @@ class NewsResource(View):
       
 class CategoryResource(View):
     def get(self, _, category_id):
-        category = get_object_or_404(Category, pk=category_id)
+        try:
+            category = get_object_or_404(Category, pk=category_id)
+        except ValueError:
+            return HttpResponseBadRequest(json.dumps({"error": "category_id needs to be an int"}))
         return JsonResponse(model_to_dict(category), safe=False)
